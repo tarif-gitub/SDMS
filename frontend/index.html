@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBMS Project - Student Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 1200px;
+            padding: 40px;
+        }
+
+        /* Login Page */
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: #ff6b6b;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .logout-btn:hover {
+            background: #ff5252;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .card form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card input,
+        .card select,
+        .card textarea {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .card textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .card button {
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .card button:hover {
+            background: #764ba2;
+        }
+
+        .info-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .info-box h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .info-item {
+            background: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div class="login-page" id="loginPage">
+            <div class="login-box">
+                <h1>🎓 Student Management System</h1>
+                <p>Login to your account</p>
+
+                <div class="form-group">
+                    <label for="userRole">Select Role</label>
+                    <select id="userRole">
+                        <option value="">-- Choose Role --</option>
+                        <option value="admin">Admin</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="userId">User ID</label>
+                    <input type="text" id="userId" placeholder="Enter your ID">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password">
+                </div>
+
+                <button class="btn" onclick="login()">Login</button>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div class="dashboard" id="adminDashboard">
+            <div class="header">
+                <h1>📊 Admin Dashboard</h1>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="success-message" id="adminMessage"></div>
+
+            <div class="admin-grid">
+                <!-- Add Department -->
+                <div class="card">
+                    <h2>➕ Add Department</h2>
+                    <form onsubmit="addDepartment(event)">
+                        <input type="text" id="deptName" placeholder="Department Name" required>
+                        <button type="submit">Add Department</button>
+                    </form>
+                </div>
+
+                <!-- Add Teacher -->
+                <div class="card">
+                    <h2>👨‍🏫 Add Teacher</h2>
+                    <form onsubmit="addTeacher(event)">
+                        <input type="number" id="teacherId" placeholder="User ID" required>
+                        <input type="text" id="teacherName" placeholder="Teacher Name" required>
+                        <input type="text" id="designation" placeholder="Designation" required>
+                        <input type="number" id="teacherDept" placeholder="Department ID" required>
+                        <button type="submit">Add Teacher</button>
+                    </form>
+                </div>
+
+                <!-- Add Student -->
+                <div class="card">
+                    <h2>👨‍🎓 Add Student</h2>
+                    <form onsubmit="addStudent(event)">
+                        <input type="number" id="studentId" placeholder="User ID" required>
+                        <input type="text" id="studentName" placeholder="Student Name" required>
+                        <input type="text" id="hallName" placeholder="Hall Name" required>
+                        <input type="number" id="deptId" placeholder="Department ID" required>
+                        <input type="number" id="advisorId" placeholder="Advisor (Teacher) ID" required>
+                        <button type="submit">Add Student</button>
+                    </form>
+                </div>
+
+                <!-- Add Course -->
+                <div class="card">
+                    <h2>📚 Add Course</h2>
+                    <form onsubmit="addCourse(event)">
+                        <input type="text" id="courseTitle" placeholder="Course Title" required>
+                        <input type="number" step="0.5" id="courseCredits" placeholder="Credit Hours" required>
+                        <input type="text" id="courseType" placeholder="Type (Core/Elective)" required>
+                        <input type="number" id="courseLevel" placeholder="Target Level" required>
+                        <input type="number" id="courseTerm" placeholder="Target Term" required>
+                        <input type="number" id="courseDept" placeholder="Department ID" required>
+                        <button type="submit">Add Course</button>
+                    </form>
+                </div>
+
+                <!-- Add Course Section -->
+                <div class="card">
+                    <h2>🧾 Add Section</h2>
+                    <form onsubmit="addSection(event)">
+                        <input type="number" id="sectionCourseId" placeholder="Course ID" required>
+                        <input type="number" id="sectionId" placeholder="Section ID" required>
+                        <input type="text" id="sectionName" placeholder="Section Name" required>
+                        <input type="number" id="sectionSemesterId" placeholder="Semester ID (optional)">
+                        <button type="submit">Add Section</button>
+                    </form>
+                </div>
+
+                <!-- View Statistics -->
+                <div class="card">
+                    <h2>📈 Statistics</h2>
+                    <div class="info-box">
+                        <h3>System Overview</h3>
+                        <div class="info-item"><strong>Total Departments:</strong> 1</div>
+                        <div class="info-item"><strong>Total Teachers:</strong> 1</div>
+                        <div class="info-item"><strong>Total Students:</strong> 2</div>
+                        <div class="info-item"><strong>Status:</strong> Active</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Dashboard -->
+        <div class="dashboard" id="teacherDashboard">
+            <div class="header">
+                <h1>👨‍🏫 Teacher Dashboard</h1>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="success-message" id="teacherMessage"></div>
+
+            <div class="content">
+                <!-- View Profile -->
+                <div class="card">
+                    <h2>👤 My Profile</h2>
+                    <div class="info-box">
+                        <div class="info-item"><strong>Name:</strong> Dr. Jane Smith</div>
+                        <div class="info-item"><strong>Designation:</strong> Associate Professor</div>
+                        <div class="info-item"><strong>Department:</strong> CSE</div>
+                        <div class="info-item"><strong>Room:</strong> A-302</div>
+                        <div class="info-item"><strong>Email:</strong> teacher@univ.edu</div>
+                    </div>
+                </div>
+
+                <!-- Update Profile -->
+                <div class="card">
+                    <h2>✏️ Update Profile</h2>
+                    <form onsubmit="updateTeacherProfile(event)">
+                        <input type="email" id="teacherEmail" placeholder="Email" required>
+                        <input type="text" id="teacherPhone" placeholder="Phone Number" required>
+                        <input type="text" id="teacherRoom" placeholder="Room Number" required>
+                        <textarea id="teacherResearch" placeholder="Research Interest"></textarea>
+                        <button type="submit">Update Profile</button>
+                    </form>
+                </div>
+
+                <!-- My Students -->
+                <div class="card">
+                    <h2>👥 My Advisees</h2>
+                    <div class="info-box">
+                        <h3>Students under my guidance</h3>
+                        <div class="info-item">John Doe - 15.0 Credits</div>
+                        <div class="info-item">Rakib Ahmed - 0.0 Credits</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Dashboard -->
+        <div class="dashboard" id="studentDashboard">
+            <div class="header">
+                <h1>👨‍🎓 Student Dashboard</h1>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="success-message" id="studentMessage"></div>
+
+            <div class="content">
+                <!-- View Profile -->
+                <div class="card">
+                    <h2>👤 My Profile</h2>
+                    <div class="info-box">
+                        <div class="info-item"><strong>Name:</strong> John Doe</div>
+                        <div class="info-item"><strong>Student ID:</strong> 101</div>
+                        <div class="info-item"><strong>Hall:</strong> North Hall</div>
+                        <div class="info-item"><strong>Department:</strong> CSE</div>
+                        <div class="info-item"><strong>Credits Earned:</strong> 15.0</div>
+                        <div class="info-item"><strong>Advisor:</strong> Dr. Jane Smith (501)</div>
+                    </div>
+                </div>
+
+                <!-- Update Profile -->
+                <div class="card">
+                    <h2>✏️ Update My Profile</h2>
+                    <form onsubmit="updateStudentProfile(event)">
+                        <input type="email" id="studentEmail" placeholder="Email" required>
+                        <input type="text" id="studentPhone" placeholder="Phone Number" required>
+                        <input type="date" id="studentDob" placeholder="Date of Birth">
+                        <input type="text" id="studentBlood" placeholder="Blood Group">
+                        <input type="text" id="studentAddress" placeholder="Address">
+                        <button type="submit">Update Profile</button>
+                    </form>
+                </div>
+
+                <!-- Enroll / Results / Payments -->
+                <div class="card">
+                    <h2>📝 Enroll / Results / Payments</h2>
+                    <form onsubmit="enrollSelf(event)">
+                        <input type="number" id="enrollCourseId" placeholder="Course ID" required>
+                        <input type="number" id="enrollSectionId" placeholder="Section ID" required>
+                        <button type="submit">Enroll in Section</button>
+                    </form>
+
+                    <form onsubmit="recordPayment(event)" style="margin-top:12px;">
+                        <input type="number" id="payAmount" placeholder="Amount" step="0.01" required>
+                        <input type="number" id="payFeeId" placeholder="Fee ID (optional)">
+                        <button type="submit">Record Payment</button>
+                    </form>
+
+                    <div style="margin-top:12px;">
+                        <button onclick="loadMyResults()">View My Results</button>
+                        <button onclick="loadMyPayments()" style="margin-left:8px;">View My Payments</button>
+                    </div>
+
+                    <div class="info-box" id="studentDynamicBox" style="margin-top:12px;"></div>
+                </div>
+
+                <!-- Academic Info -->
+                <div class="card">
+                    <h2>📚 Academic Information</h2>
+                    <div class="info-box">
+                        <div class="info-item"><strong>Total Courses:</strong> 5</div>
+                        <div class="info-item"><strong>Completed:</strong> 3</div>
+                        <div class="info-item"><strong>Ongoing:</strong> 2</div>
+                        <div class="info-item"><strong>GPA:</strong> 3.75</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentUser = null;
+
+        // Login Function
+        async function login() {
+            const role = document.getElementById('userRole').value;
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+
+            if (!role || !userId || !password) {
+                alert('Please fill all fields!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role, userId, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Login failed');
+                    return;
+                }
+
+                currentUser = { userId, role };
+
+                // Hide login page
+                document.getElementById('loginPage').style.display = 'none';
+
+                // Show relevant dashboard
+                if (role === 'admin') {
+                    document.getElementById('adminDashboard').classList.add('active');
+                    loadAdminData();
+                } else if (role === 'teacher') {
+                    document.getElementById('teacherDashboard').classList.add('active');
+                    loadTeacherData();
+                } else if (role === 'student') {
+                    document.getElementById('studentDashboard').classList.add('active');
+                    loadStudentData();
+                }
+            } catch (err) {
+                alert('Connection error: ' + err.message);
+            }
+        }
+
+        // Logout Function
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('adminDashboard').classList.remove('active');
+            document.getElementById('teacherDashboard').classList.remove('active');
+            document.getElementById('studentDashboard').classList.remove('active');
+
+            // Clear form
+            document.getElementById('userRole').value = '';
+            document.getElementById('userId').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // ============ ADMIN FUNCTIONS ============
+
+        async function addDepartment(event) {
+            event.preventDefault();
+            const deptId = prompt('Enter Department ID:');
+            if (!deptId) return;
+            
+            const name = document.getElementById('deptName').value;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/department`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ deptId: parseInt(deptId), deptName: name })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('adminMessage', `✅ ${data.message}`);
+                    document.getElementById('deptName').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Create Course
+        async function addCourse(event) {
+            event.preventDefault();
+            const title = document.getElementById('courseTitle').value;
+            const creditHours = parseFloat(document.getElementById('courseCredits').value);
+            const type = document.getElementById('courseType').value;
+            const targetLevel = parseInt(document.getElementById('courseLevel').value);
+            const targetTerm = parseInt(document.getElementById('courseTerm').value);
+            const deptId = parseInt(document.getElementById('courseDept').value);
+
+            try {
+                const response = await fetch(`${API_URL}/course`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, creditHours, type, targetLevel, targetTerm, deptId })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('adminMessage', `✅ Course added (ID: ${data.data.course_id})`);
+                    document.getElementById('courseTitle').value = '';
+                    document.getElementById('courseCredits').value = '';
+                    document.getElementById('courseType').value = '';
+                    document.getElementById('courseLevel').value = '';
+                    document.getElementById('courseTerm').value = '';
+                    document.getElementById('courseDept').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Create Course Section
+        async function addSection(event) {
+            event.preventDefault();
+            const courseId = parseInt(document.getElementById('sectionCourseId').value);
+            const sectionId = parseInt(document.getElementById('sectionId').value);
+            const sectionName = document.getElementById('sectionName').value;
+            const semesterIdRaw = document.getElementById('sectionSemesterId').value;
+            const semesterId = semesterIdRaw ? parseInt(semesterIdRaw) : null;
+
+            try {
+                const response = await fetch(`${API_URL}/course/section`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ courseId, sectionId, sectionName, semesterId })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('adminMessage', `✅ Section added for course ${courseId}`);
+                    document.getElementById('sectionCourseId').value = '';
+                    document.getElementById('sectionId').value = '';
+                    document.getElementById('sectionName').value = '';
+                    document.getElementById('sectionSemesterId').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function addTeacher(event) {
+            event.preventDefault();
+            const userId = document.getElementById('teacherId').value;
+            const password = prompt('Enter password:');
+            if (!password) return;
+
+            const name = document.getElementById('teacherName').value;
+            const designation = document.getElementById('designation').value;
+            const deptId = document.getElementById('teacherDept').value;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/teacher`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        password,
+                        name,
+                        designation,
+                        deptId: parseInt(deptId)
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('adminMessage', `✅ ${data.message}`);
+                    document.getElementById('teacherId').value = '';
+                    document.getElementById('teacherName').value = '';
+                    document.getElementById('designation').value = '';
+                    document.getElementById('teacherDept').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function addStudent(event) {
+            event.preventDefault();
+            const userId = document.getElementById('studentId').value;
+            const password = prompt('Enter password:');
+            if (!password) return;
+
+            const name = document.getElementById('studentName').value;
+            const hallName = document.getElementById('hallName').value;
+            const deptId = document.getElementById('deptId').value;
+            const advisorId = document.getElementById('advisorId').value;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/student`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        password,
+                        name,
+                        hallName,
+                        deptId: parseInt(deptId),
+                        advisorId: parseInt(advisorId)
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('adminMessage', `✅ ${data.message}`);
+                    document.getElementById('studentId').value = '';
+                    document.getElementById('studentName').value = '';
+                    document.getElementById('hallName').value = '';
+                    document.getElementById('deptId').value = '';
+                    document.getElementById('advisorId').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function loadAdminData() {
+            try {
+                const statsRes = await fetch(`${API_URL}/admin/statistics`);
+                const stats = await statsRes.json();
+                
+                if (stats.success) {
+                    const infoBox = document.querySelector('#adminDashboard .info-box');
+                    infoBox.innerHTML = `
+                        <h3>System Overview</h3>
+                        <div class="info-item"><strong>Total Departments:</strong> ${stats.data.departments}</div>
+                        <div class="info-item"><strong>Total Teachers:</strong> ${stats.data.teachers}</div>
+                        <div class="info-item"><strong>Total Students:</strong> ${stats.data.students}</div>
+                        <div class="info-item"><strong>Status:</strong> Active</div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error loading admin data:', err);
+            }
+        }
+
+        // ============ TEACHER FUNCTIONS ============
+
+        async function updateTeacherProfile(event) {
+            event.preventDefault();
+            const phone = document.getElementById('teacherPhone').value;
+            const email = document.getElementById('teacherEmail').value;
+            const roomNo = document.getElementById('teacherRoom').value;
+            const researchInterest = document.getElementById('teacherResearch').value;
+
+            try {
+                const response = await fetch(`${API_URL}/teacher/profile/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        phone,
+                        email,
+                        roomNo,
+                        researchInterest
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('teacherMessage', '✅ Profile updated successfully!');
+                    document.getElementById('teacherEmail').value = '';
+                    document.getElementById('teacherPhone').value = '';
+                    document.getElementById('teacherRoom').value = '';
+                    document.getElementById('teacherResearch').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function loadTeacherData() {
+            try {
+                const response = await fetch(`${API_URL}/teacher/profile/${currentUser.userId}`);
+                const data = await response.json();
+
+                if (data.success && data.data.core) {
+                    const core = data.data.core;
+                    const profile = data.data.profile;
+
+                    const infoBox = document.querySelector('#teacherDashboard .info-box');
+                    infoBox.innerHTML = `
+                        <div class="info-item"><strong>Name:</strong> ${core.name}</div>
+                        <div class="info-item"><strong>Designation:</strong> ${core.designation}</div>
+                        <div class="info-item"><strong>Department ID:</strong> ${core.dept_id}</div>
+                        ${profile ? `<div class="info-item"><strong>Room:</strong> ${profile.room_no}</div>` : ''}
+                        ${profile ? `<div class="info-item"><strong>Email:</strong> ${profile.email}</div>` : ''}
+                    `;
+
+                    // Load students
+                    loadTeacherStudents();
+                }
+            } catch (err) {
+                console.error('Error loading teacher data:', err);
+            }
+        }
+
+        async function loadTeacherStudents() {
+            try {
+                const response = await fetch(`${API_URL}/teacher/students/${currentUser.userId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const studentsDiv = document.querySelectorAll('#teacherDashboard .info-box')[1];
+                    let html = '<h3>Students under my guidance</h3>';
+                    
+                    if (data.data.length === 0) {
+                        html += '<div class="info-item">No students assigned</div>';
+                    } else {
+                        data.data.forEach(student => {
+                            html += `<div class="info-item">${student.name} - ${student.total_credit_earned} Credits</div>`;
+                        });
+                    }
+                    
+                    studentsDiv.innerHTML = html;
+                }
+            } catch (err) {
+                console.error('Error loading students:', err);
+            }
+        }
+
+        // ============ STUDENT FUNCTIONS ============
+
+        async function updateStudentProfile(event) {
+            event.preventDefault();
+            const email = document.getElementById('studentEmail').value;
+            const phone = document.getElementById('studentPhone').value;
+            const dob = document.getElementById('studentDob').value;
+            const bloodGroup = document.getElementById('studentBlood').value;
+            const address = document.getElementById('studentAddress').value;
+
+            try {
+                const response = await fetch(`${API_URL}/student/profile/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        phone,
+                        email,
+                        dob,
+                        bloodGroup,
+                        address
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('studentMessage', '✅ Profile updated successfully!');
+                    document.getElementById('studentEmail').value = '';
+                    document.getElementById('studentPhone').value = '';
+                    document.getElementById('studentDob').value = '';
+                    document.getElementById('studentBlood').value = '';
+                    document.getElementById('studentAddress').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function loadStudentData() {
+            try {
+                const response = await fetch(`${API_URL}/student/profile/${currentUser.userId}`);
+                const data = await response.json();
+
+                if (data.success && data.data.core) {
+                    const core = data.data.core;
+                    const profile = data.data.profile;
+
+                    const infoBox = document.querySelector('#studentDashboard .info-box');
+                    infoBox.innerHTML = `
+                        <div class="info-item"><strong>Name:</strong> ${core.name}</div>
+                        <div class="info-item"><strong>Student ID:</strong> ${core.user_id}</div>
+                        <div class="info-item"><strong>Hall:</strong> ${core.hall_name}</div>
+                        <div class="info-item"><strong>Department:</strong> ${core.dept_id}</div>
+                        <div class="info-item"><strong>Credits Earned:</strong> ${core.total_credit_earned}</div>
+                        <div class="info-item"><strong>Advisor ID:</strong> ${core.advisor_id}</div>
+                    `;
+
+                    // Load advisor info
+                    if (core.advisor_id) {
+                        loadStudentAdvisor(core.advisor_id);
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading student data:', err);
+            }
+        }
+
+        async function loadStudentAdvisor(advisorId) {
+            try {
+                const response = await fetch(`${API_URL}/student/advisor/${advisorId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const infoItems = document.querySelectorAll('#studentDashboard .info-box .info-item');
+                    const lastItem = infoItems[infoItems.length - 1];
+                    lastItem.innerHTML = `<strong>Advisor:</strong> ${data.data.name} (${data.data.user_id})`;
+                }
+            } catch (err) {
+                console.error('Error loading advisor:', err);
+            }
+        }
+
+        // Enroll self in a section
+        async function enrollSelf(event) {
+            event.preventDefault();
+            const courseId = parseInt(document.getElementById('enrollCourseId').value);
+            const sectionId = parseInt(document.getElementById('enrollSectionId').value);
+
+            try {
+                const response = await fetch(`${API_URL}/enroll`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: parseInt(currentUser.userId), courseId, sectionId })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('studentMessage', `✅ Enrolled in course ${courseId} section ${sectionId}`);
+                    document.getElementById('enrollCourseId').value = '';
+                    document.getElementById('enrollSectionId').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Record payment
+        async function recordPayment(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('payAmount').value);
+            const feeIdRaw = document.getElementById('payFeeId').value;
+            const feeId = feeIdRaw ? parseInt(feeIdRaw) : null;
+
+            try {
+                const response = await fetch(`${API_URL}/student/payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: parseInt(currentUser.userId), amountPaid: amount, due: 0.0, status: 'Paid', feeId })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('studentMessage', `✅ Payment recorded: ${amount}`);
+                    document.getElementById('payAmount').value = '';
+                    document.getElementById('payFeeId').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Load my results
+        async function loadMyResults() {
+            try {
+                const response = await fetch(`${API_URL}/student/results/${currentUser.userId}`);
+                const data = await response.json();
+                const box = document.getElementById('studentDynamicBox');
+                if (response.ok && data.success) {
+                    if (data.data.length === 0) {
+                        box.innerHTML = '<div class="info-item">No results available</div>';
+                        return;
+                    }
+                    let html = '<h3>My Results</h3>';
+                    data.data.forEach(r => {
+                        html += `<div class="info-item">Course ${r.course_id} Sec ${r.section_id}: ${r.obtained_marks} marks, Grade: ${r.grade_points}</div>`;
+                    });
+                    box.innerHTML = html;
+                } else {
+                    box.innerHTML = `<div class="info-item">Error: ${data.error}</div>`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Load my payments
+        async function loadMyPayments() {
+            try {
+                const response = await fetch(`${API_URL}/student/payments/${currentUser.userId}`);
+                const data = await response.json();
+                const box = document.getElementById('studentDynamicBox');
+                if (response.ok && data.success) {
+                    if (data.data.length === 0) {
+                        box.innerHTML = '<div class="info-item">No payments recorded</div>';
+                        return;
+                    }
+                    let html = '<h3>My Payments</h3>';
+                    data.data.forEach(p => {
+                        html += `<div class="info-item">${new Date(p.payment_date).toLocaleString()}: ${p.amount_paid} (${p.status})</div>`;
+                    });
+                    box.innerHTML = html;
+                } else {
+                    box.innerHTML = `<div class="info-item">Error: ${data.error}</div>`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Helper Function
+        function showMessage(elementId, message) {
+            const msgElement = document.getElementById(elementId);
+            msgElement.textContent = message;
+            msgElement.classList.add('show');
+            setTimeout(() => {
+                msgElement.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
